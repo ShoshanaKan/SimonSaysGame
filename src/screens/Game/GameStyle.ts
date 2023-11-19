@@ -22,7 +22,7 @@ export const styles = StyleSheet.create({
     width: 200,
     position: 'absolute',
     top: '50%',
-    transform: [{ translateY: -100}],
+    transform: [{ translateY: -100 }],
     zIndex: 1,
     left: 100,
     display: 'flex',
@@ -68,5 +68,11 @@ export const styles = StyleSheet.create({
     height: '100%',
     backgroundColor: 'black',
     padding: 10
+  },
+  gameBtn: {
+    flex: 1,
+    borderWidth: 5,
+    borderColor: 'black',
+    borderRadius: 40,
   }
 });

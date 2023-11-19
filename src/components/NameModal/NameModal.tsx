@@ -19,18 +19,14 @@ const NameModal = ({ saveScore, score }: Props) => {
     dispatch(hideModal());
   };
 
-  const resultsModalVisible = useSelector(
-    (state: RootState) => state.appState.showModal,
-  );
+  const resultsModalVisible = useSelector((state: RootState) => state.appState.showModal);
 
   return (
     <Modal
       animationType="slide"
       transparent={true}
       visible={resultsModalVisible}
-      onRequestClose={() => {
-        dispatch(hideModal());
-      }}
+      onRequestClose={() => dispatch(hideModal())}
     >
       <View style={styles.centeredView}>
         <View style={styles.modalView}>

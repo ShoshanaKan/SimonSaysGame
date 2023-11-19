@@ -1,8 +1,8 @@
-import {useState, useEffect, useRef} from 'react';
-import {useDispatch, useSelector} from 'react-redux';
-import {RootState} from '../redux/store';
+import { useState, useEffect } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
 import useSounds from './useSounds';
-import { resetUserSequence, showModal, triggerColor } from '../redux/appSlice';
+import { resetUserSequence, showModal } from '../redux/appSlice';
 
 const randomInteger = (min: number, max: number) => {
   return Math.floor(Math.random() * (max - min + 1)) + min;
@@ -14,18 +14,21 @@ type ReturnedTypes = {
   next: () => void;
   restartGame: () => void;
   simonTurn: boolean;
+  currentColorId: number | undefined;
+  setCurrentColorId: (id: any) => void;
 };
 
 const useGame = (): ReturnedTypes => {
   const [sequence, setSequence] = useState<number[]>([]);
   const [isActive, setIsActive] = useState(false);
   const [simonTurn, setSimonTurn] = useState(false);
-  const initialRender = useRef(true);
+  const [currentColorId, setCurrentColorId] = useState<number>();
+
   const enteredSequence = useSelector(
     (state: RootState) => state.appState.sequence,
   );
   const dispatch = useDispatch();
-  var score = sequence.length - 1;
+  let score = sequence.length - 1;
   const sound = useSounds();
 
   useEffect(() => {
@@ -36,13 +39,8 @@ const useGame = (): ReturnedTypes => {
   }, [enteredSequence]);
 
   useEffect(() => {
-    initialRender.current === true && next();
-    initialRender.current = false;
-  }, [initialRender.current]);
-
-  useEffect(() => {
     triggerSimonTurn();
-  }, [sequence, isActive]);
+  }, [sequence]);
 
   const next = async () => {
     dispatch(resetUserSequence());
@@ -57,15 +55,15 @@ const useGame = (): ReturnedTypes => {
 
   const restartGame = () => {
     setSequence([]);
-    initialRender.current = true;
     setIsActive(true);
+    next();
   };
 
   const compareSequence = (userSequence: number[]): boolean => {
     let isEqual = false;
     if (sequence.length > 0) {
-      sequence.forEach((element, idx) => {
-        if (element != userSequence[idx] && userSequence[idx] != undefined)
+      sequence.forEach((item, index) => {
+        if (item != userSequence[index] && userSequence[index] != undefined)
           return abortGame();
         isEqual = true;
       });
@@ -83,19 +81,26 @@ const useGame = (): ReturnedTypes => {
 
   const triggerColorsInSequence = async () => {
     return new Promise(async resolve => {
-      let i;
-      await new Promise(resolve => setTimeout(resolve, 500));
-      for (i = 0; i < sequence.length; i++) {
-        dispatch(triggerColor(-1));
-        await new Promise(resolve => setTimeout(resolve, 300));
-        dispatch(triggerColor(sequence[i]));
+      for (let i = 0; i < sequence.length; i++) {
+        let duration = (sound[sequence[i] - 1]?.getDuration() || 0.3) * 1000;
+        setCurrentColorId(-1)
+        await new Promise(resolve => setTimeout(resolve, duration));
+        setCurrentColorId(sequence[i]);
         sound[sequence[i] - 1]?.play();
-        await new Promise(resolve => setTimeout(resolve, 300));
+        await new Promise(resolve => setTimeout(resolve, duration));
       }
-      dispatch(triggerColor(-1));
+      setCurrentColorId(-1)
       resolve('done');
     });
   };
-  return {isActive, score, next, restartGame, simonTurn};
+  return {
+    isActive,
+    score,
+    next,
+    restartGame,
+    simonTurn,
+    currentColorId,
+    setCurrentColorId,
+  };
 };
 export default useGame;

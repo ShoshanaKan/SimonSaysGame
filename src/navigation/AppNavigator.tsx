@@ -9,7 +9,7 @@ const Stack = createStackNavigator();
 export type RootStackParamList = {
     Game: undefined;
     Results: {
-        score: number;
+        currentScore: number;
         restartGame: () => void;
     };
 };
@@ -17,7 +17,7 @@ export type RootStackParamList = {
 const AppNavigator = () => {
     return (
         <NavigationContainer >
-            <Stack.Navigator screenOptions={{ headerShown: false }} >
+            <Stack.Navigator screenOptions={{ headerShown: false }} initialRouteName='Game'>
                 <Stack.Screen name="Game" component={Game as any} />
                 <Stack.Screen name="Results" component={Results as any} />
             </Stack.Navigator>

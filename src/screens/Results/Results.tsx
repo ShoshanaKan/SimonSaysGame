@@ -15,29 +15,20 @@ type Props = StackScreenProps<RootStackParamList, 'Results'>;
 
 const Results = ({ route, navigation }: Props) => {
 
-  const { score } = route.params;
+  const { currentScore } = route.params || '';
   const [highScoreList, setHighScoreList] = useState<Array<scoreObject>>([]);
 
-  const saveScore = async (name: string, score: number) => {
+  const saveScore = async (name: string) => {
     try {
-      let list = await AsyncStorage.getItem('highScoreList');
-      let newList = list != null ? JSON.parse(list) : [];
-      newList.push({ name: name, score: score });
-      let arrLength = newList.length || 0;
-      for (let i = 0; i < arrLength - 1; i++) {
-        for (let j = i + 1; j < arrLength; j++) {
-          if (newList[j].score > newList[i].score) {
-            let temp = newList[i];
-            newList[i] = newList[j];
-            newList[j] = temp;
-          }
-        }
-      }
-      newList = newList.slice(0, 10)
-      setHighScoreList(newList);
-      await AsyncStorage.setItem('highScoreList', JSON.stringify(newList));
+      let top10 = await AsyncStorage.getItem('highScoreList');
+      let newTop10 = top10 != null ? JSON.parse(top10) : [];
+      newTop10.push({ name: name, score: currentScore });
+      newTop10.sort((a: any, b: any) => b.score - a.score);
+      newTop10 = newTop10.slice(0, 10);
+      setHighScoreList(newTop10);
+      await AsyncStorage.setItem('highScoreList', JSON.stringify(newTop10));
     } catch (e) {
-      console.log(e)
+      console.log(e);
     }
   }
 
@@ -51,7 +42,7 @@ const Results = ({ route, navigation }: Props) => {
 
   return (
     <View style={styles.container}>
-      <NameModal saveScore={saveScore} score={score} />
+      <NameModal saveScore={saveScore} score={currentScore} />
       <Text style={styles.title}>The best results:</Text>
       <View style={{ flex: 1 }}>{ScoreList}</View>
       <Pressable style={styles.startbtn} onPress={() => navigation.goBack()}>

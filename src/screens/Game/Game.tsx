@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaView, Text, View, Pressable } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import { styles } from './GameStyle';
@@ -14,15 +14,13 @@ type Props = StackScreenProps<RootStackParamList, 'Game'>;
 
 const Game = ({ navigation }: Props) => {
     const dispatch = useDispatch();
-    const [clickedColor, setClickedColor] = useState<number>();
     const nameModalVisible = useSelector((state: RootState) => state.appState.showModal);
-    const currentColor = useSelector((state: RootState) => state.appState.currentColor);
-    const { isActive, score, restartGame, simonTurn } = useGame();
+    const { isActive, score, restartGame, simonTurn, setCurrentColorId, currentColorId } = useGame();
     const sound = useSounds();
 
     useEffect(() => {
         if (nameModalVisible) {
-            navigation.navigate('Results', { score: score, restartGame: restartGame });
+            navigation.navigate('Results', { currentScore: score, restartGame });
         }
     }, [nameModalVisible]);
 
@@ -35,7 +33,7 @@ const Game = ({ navigation }: Props) => {
     const handlePressIn = async (colorId: number) => {
         if (!simonTurn && isActive) {
             await sound[colorId - 1]?.play();
-            setClickedColor(colorId);
+            setCurrentColorId(colorId);
         }
     };
 
@@ -44,20 +42,14 @@ const Game = ({ navigation }: Props) => {
         colorStringIn: string,
         colorStringOut: string,
     ) => {
-
         return (
             <Pressable
                 onPress={() => handleClick(colorId)}
                 onPressIn={() => handlePressIn(colorId)}
-                onPressOut={() => setClickedColor(-1)}
-                style={{
-                    flex: 1,
-                    borderWidth: 5,
-                    borderColor: 'black',
-                    borderRadius: 40,
-                    backgroundColor:
-                        currentColor === colorId || clickedColor === colorId ? colorStringIn : colorStringOut,
-                }}
+                onPressOut={() => setCurrentColorId(-1)}
+                style={[styles.gameBtn,
+                { backgroundColor: currentColorId === colorId ? colorStringIn : colorStringOut }
+                ]}
             />
         );
     };
